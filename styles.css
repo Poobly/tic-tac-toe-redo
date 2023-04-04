@@ -1,0 +1,29 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.button {
+    width: 75px;
+    height: 25px;
+}
+
+.board-piece {
+    height: 100px;
+    width: 100px;
+    border: 1px solid green;
+}
+
+
+.main-container {
+    display: grid;
+    justify-content: center;
+}
+
+.controls-container {
+    display: grid;
+    justify-content: space-between;
+    grid-auto-flow: column;
+    
+}
