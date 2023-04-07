@@ -4,6 +4,11 @@
     padding: 0;
 }
 
+.game-modal {
+    display: none;
+    
+}
+
 .button {
     width: 75px;
     height: 25px;
@@ -26,4 +31,8 @@
     justify-content: space-between;
     grid-auto-flow: column;
     
+}
+
+.board-piece {
+    text-align: center;
 }
