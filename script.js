@@ -2,7 +2,7 @@ const Player = (cpu = false) => {
     let type = "";
     let turn = true;
     let isCpu = cpu;
-    return {type, turn, cpu};
+    return {type, turn, isCpu};
 };
 
 // the gameboard
@@ -37,6 +37,21 @@ const displayController = (() => {
             boardPiece.textContent = "";
         });
     } 
+    
+    const displayModal = (player) => {
+        const modal = document.getElementById("game-modal");
+        const newGameButton = document.getElementById("new-game-button");
+        modal.style.display = "block";
+        // check if cpu or not to declare who won
+        player.isCpu ? 
+        modal.children[0].textContent = "You lost" :
+        modal.children[0].textContent = "You won";
+
+        newGameButton.addEventListener("click", () => {
+            modal.style.display = "none";
+            gameController.resetGame()
+        });
+    }
 
     _x.addEventListener("click", (e) => {
         gameController.startGame(_x);
@@ -67,7 +82,7 @@ const displayController = (() => {
     });
 
     
-    return {updateBoard, resetDOMBoard};
+    return {updateBoard, resetDOMBoard, displayModal};
 })();
 
 // controls the game
@@ -123,6 +138,7 @@ const gameController = (() => {
             console.log(`${player} has won`)
             gameController.pauseGame = true;
             console.log(gameController.pauseGame);
+            displayController.displayModal(player);
         }
 
     }
