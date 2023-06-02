@@ -10,7 +10,12 @@
     left: 50%;
     transform: translate(-50%, -50%);
     display: none;
-    
+    background-color: #AAAAAAAA;
+    width: 250px;
+    height: 250px;
+    text-align: center;
+    justify-content: center;
+    align-content: space-around;
 }
 
 .button {

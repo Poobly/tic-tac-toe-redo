@@ -22,75 +22,14 @@ const gameBoard = (() => {
     return {gameBoardArray, updateBoard, resetBoard};
 })();
 
-// controls the webpage display
-const displayController = (() => {
-    const _gameBoardPieces = document.querySelectorAll(".board-piece");
-    const _x = document.getElementById("x-button");
-    const _o = document.getElementById("o-button");
 
-    const updateBoard = (index, player) => {
-        _gameBoardPieces[index].textContent = player.type;
-    }
-
-    const resetDOMBoard = () => {
-        _gameBoardPieces.forEach(boardPiece => {
-            boardPiece.textContent = "";
-        });
-    } 
-    
-    const displayModal = (player) => {
-        const modal = document.getElementById("game-modal");
-        const newGameButton = document.getElementById("new-game-button");
-        modal.style.display = "block";
-        // check if cpu or not to declare who won
-        player.isCpu ? 
-        modal.children[0].textContent = "You lost" :
-        modal.children[0].textContent = "You won";
-
-        newGameButton.addEventListener("click", () => {
-            modal.style.display = "none";
-            gameController.resetGame()
-        });
-    }
-
-    _x.addEventListener("click", (e) => {
-        gameController.startGame(_x);
-    });
-
-    _o.addEventListener("click", (e) => {
-        gameController.startGame(_o);
-    });
-
-    _gameBoardPieces.forEach(boardPiece => {
-        boardPiece.addEventListener("click", (e) => {
-            const index = boardPiece.id[boardPiece.id.length - 1] - 1;
-            // check if index of current gameboard piece is empty
-            // console.log(gameController.pauseGame);
-            if (!gameController.pauseGame) {
-                if (typeof gameBoard.gameBoardArray[index] === "undefined") {
-                    // if board empty = start game, if not do a move
-                    if (gameBoard.gameBoardArray.some(element => element === "X" || element === "O")) {
-                        gameController.newTurn(index);
-                    }
-                    else {
-                        gameController.startGame("X", index);
-                    }
-                }
-            }
-            
-        })
-    });
-
-    
-    return {updateBoard, resetDOMBoard, displayModal};
-})();
 
 // controls the game
 const gameController = (() => {
     let pauseGame = false;
     const player1 = Player();
     const cpu = Player(true);
-    const _resetButton = document.getElementById("reset-button");
+    
 
     // starts the game
     const startGame = (type, index) => {
@@ -98,6 +37,7 @@ const gameController = (() => {
 
         if (player1.type === "X") cpu.type = "O";
         else cpu.type = "X";
+        
 
         newTurn(index);
     }
@@ -107,8 +47,7 @@ const gameController = (() => {
         displayController.resetDOMBoard();
         gameController.pauseGame = false;
     }
-    // reset button
-    _resetButton.addEventListener("click", resetGame);
+
     // ends the game
     const endGame = () => {
         
@@ -146,8 +85,90 @@ const gameController = (() => {
     return {startGame, resetGame, endGame, player1, cpu, newTurn, pauseGame};
 })();
 
+// controls the webpage display
+const displayController = (() => {
+    const _gameBoardPieces = document.querySelectorAll(".board-piece");
+    const _x = document.getElementById("x-button");
+    const _o = document.getElementById("o-button");
+    const _resetButton = document.getElementById("reset-button");
+
+    const updateBoard = (index, player) => {
+        _gameBoardPieces[index].textContent = player.type;
+    }
+
+    const resetDOMBoard = () => {
+        _gameBoardPieces.forEach(boardPiece => {
+            boardPiece.textContent = "";
+        });
+    } 
+
+    const _boardGameEvent = (boardPiece) => {
+        const index = boardPiece.id[boardPiece.id.length - 1] - 1;
+        // check if index of current gameboard piece is empty
+        if (!gameController.pauseGame) {
+            if (typeof gameBoard.gameBoardArray[index] === "undefined") {
+                // if board empty = start game, if not do a move
+                if (gameBoard.gameBoardArray.some(element => element === "X" || element === "O")) {
+                    gameController.newTurn(index);
+                }
+                else {
+                    gameController.startGame("X", index);
+                }
+            }
+        }
+    }
+
+    const displayModal = (player) => {
+        const modal = document.getElementById("game-modal");
+        const newGameButton = document.getElementById("new-game-button");
+        modal.style.display = "grid";
+        // check if cpu or not to declare who won
+        player.isCpu ? 
+        modal.children[0].textContent = "You lost" :
+        modal.children[0].textContent = "You won";
+        _resetButton.removeEventListener("click", gameController.resetGame);
+        _o.removeEventListener("click", _startGameEvent)
+        newGameButton.addEventListener("click", () => {
+            _o.addEventListener("click", _startGameEvent);
+            _resetButton.addEventListener("click", gameController.resetGame);
+            modal.style.display = "none";
+            gameController.resetGame();
+            
+        });
+    }
+    
+    const _startGameEvent = () => {
+        gameController.cpu.type = "X"
+        gameController.player1.type = "O";
+        cpuController.easy();
+        _o.removeEventListener("click", _startGameEvent);
+    }
+
+    _x.addEventListener("click", (e) => {
+        gameController.startGame(_x);
+        cpuController.easy();
+    });
+
+    _o.addEventListener("click", _startGameEvent);
+
+    // reset button
+    _resetButton.addEventListener("click", gameController.resetGame);
+    
+    _gameBoardPieces.forEach(boardPiece => {
+        boardPiece.addEventListener("click", _boardGameEvent.bind(this, boardPiece));
+    });
+
+    
+    return {updateBoard, resetDOMBoard, displayModal};
+})();
+
 // controls the cpu
 const cpuController = (() => {
+    let difficulty 
+    const play = () => {
+
+    }
+
     // easy mode
     const easy = () => {
         index = Math.floor(Math.random() * 9);
@@ -156,6 +177,14 @@ const cpuController = (() => {
             gameBoard.updateBoard(index, gameController.cpu);
         }
         else easy();
+    }
+
+    const medium = () => {
+
+    }
+
+    const hard = () => {
+
     }
 
     return {easy};
