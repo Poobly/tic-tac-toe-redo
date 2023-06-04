@@ -7,7 +7,7 @@ const Player = (cpu = false) => {
 
 // the gameboard
 const gameBoard = (() => {
-    const gameBoardArray = new Array(9);
+    const gameBoardArray = new Array(9).fill(undefined);
 
     const updateBoard = (index, player) => {
         gameBoardArray[index] = player.type;
@@ -27,6 +27,7 @@ const gameBoard = (() => {
 // controls the game
 const gameController = (() => {
     let pauseGame = false;
+    const getPause = () => pauseGame;
     const player1 = Player();
     const cpu = Player(true);
     
@@ -45,44 +46,63 @@ const gameController = (() => {
     const resetGame = () => {
         gameBoard.resetBoard();
         displayController.resetDOMBoard();
-        gameController.pauseGame = false;
+        pauseGame = false;
     }
 
     // ends the game
     const endGame = () => {
-        
         gameBoard.resetBoard();
         displayController.resetDOMBoard();
-        
-
     }
+
     // new turn
     const newTurn = (index) => {
         gameBoard.updateBoard(index, player1);
         displayController.updateBoard(index, player1);
         checkWin(player1);
-        if (!pauseGame) {
+        console.log("before");
+        // let cpu play if game isn't paused/board isn't full already
+        if (!pauseGame && gameBoard.gameBoardArray.some(element => typeof element === "undefined")) {
             cpuController.easy();
             checkWin(cpu);
         }
+        else if (!gameBoard.gameBoardArray.some(element => typeof element === "undefined")) {
+            console.log("full")
+        }
     }
+
     // checks win
     const checkWin = (player) => {
         const type = player.type;
-        const board = gameBoard.gameBoardArray;
-        if (board[0] === type && board[1] === type && board[2] === type ||
-            board[3] === type && board[4] === type && board[5] === type ||
-            board[6] === type && board[7] === type && board[8] === type) {
-                
-            console.log(`${player} has won`)
-            gameController.pauseGame = true;
-            console.log(gameController.pauseGame);
+        let board = gameBoard.gameBoardArray;
+        board = [board.slice(0, 3), board.slice(3, 6), board.slice(6, 9)];
+        
+        // traversing rows and check row win
+        for (let i = 0; i < 3; i++) {
+            if (board[i][0] === type && board[i][1] === type && board[i][2] === type) {
+                declareWinner();
+            }
+            
+            // traversing columns and check column win
+            for (let j = 0; j < 3; j++) {
+                if (board[0][j] === type && board[1][j] === type && board[2][j] === type) {
+                    declareWinner();
+                }
+            }
+
+        // checks diagonal win
+        if (board[0][0] === type && board[1][1] === type && board[2][2] === type || 
+            board[2][0] === type && board[1][1] === type && board[0][2] === type) {
+            declareWinner();
+        }
+    }
+        function declareWinner() {
+            pauseGame = true;
             displayController.displayModal(player);
         }
-
     }
 
-    return {startGame, resetGame, endGame, player1, cpu, newTurn, pauseGame};
+    return {startGame, resetGame, endGame, player1, cpu, newTurn, getPause};
 })();
 
 // controls the webpage display
@@ -105,7 +125,7 @@ const displayController = (() => {
     const _boardGameEvent = (boardPiece) => {
         const index = boardPiece.id[boardPiece.id.length - 1] - 1;
         // check if index of current gameboard piece is empty
-        if (!gameController.pauseGame) {
+        if (!gameController.getPause()) {
             if (typeof gameBoard.gameBoardArray[index] === "undefined") {
                 // if board empty = start game, if not do a move
                 if (gameBoard.gameBoardArray.some(element => element === "X" || element === "O")) {
@@ -126,30 +146,37 @@ const displayController = (() => {
         player.isCpu ? 
         modal.children[0].textContent = "You lost" :
         modal.children[0].textContent = "You won";
+
         _resetButton.removeEventListener("click", gameController.resetGame);
-        _o.removeEventListener("click", _startGameEvent)
+        _x.removeEventListener("click", _startGameEventPlayer);
+        _o.removeEventListener("click", _startGameEventCpu)
         newGameButton.addEventListener("click", () => {
-            _o.addEventListener("click", _startGameEvent);
+            _x.addEventListener("click", _startGameEventPlayer);
+            _o.addEventListener("click", _startGameEventCpu);
             _resetButton.addEventListener("click", gameController.resetGame);
             modal.style.display = "none";
             gameController.resetGame();
-            
         });
     }
     
-    const _startGameEvent = () => {
+    const _startGameEventCpu = () => {
+        _x.addEventListener("click", _startGameEventPlayer);
+        gameController.resetGame();
         gameController.cpu.type = "X"
         gameController.player1.type = "O";
         cpuController.easy();
-        _o.removeEventListener("click", _startGameEvent);
+        _o.removeEventListener("click", _startGameEventCpu);
     }
 
-    _x.addEventListener("click", (e) => {
-        gameController.startGame(_x);
-        cpuController.easy();
-    });
+    const _startGameEventPlayer = () => {
+        _o.addEventListener("click", _startGameEventCpu);
+        gameController.resetGame();
+        _x.removeEventListener("click", _startGameEventPlayer);
+    }
 
-    _o.addEventListener("click", _startGameEvent);
+    _x.addEventListener("click", _startGameEventPlayer);
+
+    _o.addEventListener("click", _startGameEventCpu);
 
     // reset button
     _resetButton.addEventListener("click", gameController.resetGame);
@@ -176,7 +203,10 @@ const cpuController = (() => {
             displayController.updateBoard(index, gameController.cpu);
             gameBoard.updateBoard(index, gameController.cpu);
         }
-        else easy();
+        else {
+
+            easy();
+        }
     }
 
     const medium = () => {
