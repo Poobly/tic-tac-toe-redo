@@ -60,14 +60,10 @@ const gameController = (() => {
         gameBoard.updateBoard(index, player1);
         displayController.updateBoard(index, player1);
         checkWin(player1);
-        console.log("before");
         // let cpu play if game isn't paused/board isn't full already
         if (!pauseGame && gameBoard.gameBoardArray.some(element => typeof element === "undefined")) {
             cpuController.easy();
             checkWin(cpu);
-        }
-        else if (!gameBoard.gameBoardArray.some(element => typeof element === "undefined")) {
-            console.log("full")
         }
     }
 
